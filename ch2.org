@@ -40,19 +40,29 @@ RUN apt-get update && apt-get install -y nginx && apt-get install -y vim
 EXPOSE 80
 #+END_SRC
 First line is a comment (comments start from #).
+
 Second line is denoting the base image. FROM directive must be the first instruction in Dockerfile. Whatever we do from henceforth will be built upon the base image
+
 Third line (with directive/instruction MAINTAINER) denotes the author of this image along with email id
+
 Fourth line denotes the actual commands to be performed inside the container. As can be seen, we are updating the index, then installing nginx and vim.
+
 Fifth line is exposing the port 80 to outside network. 
+
 Once we save this as 'Dockerfile' in some specific folder, the rest of the contents of that folder are taken as context by docker. This is useful for application development using docker.
+
 For now, the folder will be empty (since we just want to see the nginx server up and running in docker container)
+
 Inside the folder, run following command
 #+BEGIN_SRC 
 docker build -t "<repository_name:tag_name>" .
 #+END_SRC
 Where repository_name is the name of repository you want this image to be associated with, and tag_name is, well, name of the tag (e.g. v1, v0.0.1 etc.)
+
 This command 'builds' the docker image. Once done (given there are no errors in Dockerfile) you can see the image in 'docker images' list.
+
 Notice the '.' at the end. It denotes the path of Dockerfile. Since we're in the root of directory where Dockerfile is saved, it works. You can give a different path wherever the Dockerfile is present.
+
 You can look through 'docker build --help' for more details.
 
 
