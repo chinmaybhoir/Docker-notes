@@ -1,0 +1,9 @@
+#+TITLE: Docker Images and Repositories
+
+- Docker image is made up of filesystems layered over each other
+- At the base is boot filesystem (*bootfs*). When a container has booted, it is moved into memory, and the boot filesystem is unmounted to free up the RAM used by initrd disc image
+- Next, docker layers a root filesystem (*rootfs*) on top of bootfs. This rootfs can be one or more operating system
+- Docker uses [[https://en.wikipedia.org/wiki/Union_mount][union mount]] to add one or more read-only filesystems on top of rootfs. The union mount overlays the filesystem on top of one another
+- Docker calls these filesystems images. Images can be layered on top of one another
+- The image below is called 'parent image'. We can traverse the images till we reach the end, and the last image is called 'base image'
+[[file:img/docker_filesystem_layers.png][Image layers in Docker]]
