@@ -1,0 +1,144 @@
+#+TITLE: Chapter I - Docker basics
+
+NOTE - To install docker, go to [[https://docs.docker.com/install/][installation instructions on documentation page]]
+
+First, see if docker is installed on your platform
+#+BEGIN_SRC shell
+sudo docker info
+#+END_SRC
+
+** Run your first container
+Getting down to business, issue following command 
+#+BEGIN_SRC shell
+sudo docker -i -t ubuntu /bin/bash
+#+END_SRC
+
+If everything went right, you should now see a linux-like prompt. 
+This is the interactive terminal session of the container. Docker first looks for image 'ubuntu' locally, if it is not present, docker pulls the image from docker hub.
+Let's analyse the command step by step. Option '-i' tells docker to provide STDIN, so you can see logs/messages on your terminal. Option '-t' tells docker to give a proxy tty session (which is what the prompt you see is). You can also say '-it' which combines '-i' and '-t'.
+You can treat the container terminal same as any other linux terminal. You can download and install software in a container.
+
+Once you 'quit' the prompt (by issuing command 'exit'), you will be returned to your regular terminal.
+What happened to the image? Is it gone?
+
+** Docker images and containers
+*** List images
+So what docker images are present in your computer? To see this, you can issue following command
+#+BEGIN_SRC shell
+docker image ls
+#+END_SRC
+This command lists all the images present in your computer. You should also see 'ubuntu' in that list.
+
+*** Running/stopped containers
+So what happened to our container?
+Issue following command and see what happens
+#+BEGIN_SRC 
+docker ps -a
+#+END_SRC
+
+You should see you container with status tagged as 'Exited'. The command 'ps' is short for processes (similar to command in linux). Option '-a' is important here. Without option '-a', we can only see the containers that are 'running'. Option '-a' gives us a list of ALL containers, including the once 'exited'.
+#+BEGIN_SRC 
+TIP: To see what options we can pass to any command, use --help option. For example, the command 'docker ps --help' with give all the information about that command.
+#+END_SRC
+
+*** Container names
+If you see the output of previous command, you can observer that the last column 'NAMES' has given our container a random name ('stupefied_kilby' for e.g.)
+If you want to give a name to container, you can do so by using '--name' flag. So if you want to call you container /my_first_container/, you can issue following command
+#+BEGIN_SRC 
+docker run --name my_first_container -it ubuntu /bin/bash
+#+END_SRC
+
+*** Restarting container
+We have seen previously that our container was in 'exited' status. We can restart it using following command
+#+BEGIN_SRC 
+docker start my_first_container
+#+END_SRC
+We can also specify the container ID
+#+BEGIN_SRC 
+docker start b27ba0fbdfec
+#+END_SRC
+
+*** Attaching to container
+After we have restarted the container, the prompt is waiting inside the container, we just need to 'attach' to it 
+#+BEGIN_SRC 
+docker attach my_first_container
+#+END_SRC
+
+*** Daemonized containers
+The container we created previously had a prompt in it, which enabled us to interact with it. But mostly, for applications and services, we do not need interactive sessions. We just need our container to run a process. These are called 'daemonized containers'.
+Here is a sample daemonized container
+#+BEGIN_SRC 
+docker run --name daemonized_container -d ubuntu /bin/sh "while true; do echo hello world; sleep 1; done"
+#+END_SRC
+This command will return container ID, container will be running in background.
+We ran following shell script inside that container
+#+BEGIN_SRC 
+while true
+do
+    echo hello world
+    sleep 1
+done
+#+END_SRC
+So our container will be printing "hello world" continuously.
+We can see the logs by following command
+#+BEGIN_SRC 
+docker logs daemonized_container
+#+END_SRC
+Which will display "hello world" printed in our container.
+You can see all logs command options with '--help' option.
+
+*** Docker stats
+We can see which container is using how much resource by following command
+#+BEGIN_SRC 
+docker stats
+#+END_SRC
+We can also mention specific container names to see their stats
+#+BEGIN_SRC 
+docker stats daemonized_container
+#+END_SRC
+
+*** Process inside a container
+We can run an external process inside container with 'docker exec' command.
+We can run the process in background as well as with interactive session.
+Following is the sample command for running process inside a container:
+#+BEGIN_SRC 
+docker exec -d daemonized_container touch /etc/new_config_file
+#+END_SRC
+This command runs the process 'touch /etc/new_config_file' inside daemonized_container. Flag '-d' denotes that the process will run in background.
+We can also run process with interactive shell. Following is an example
+#+BEGIN_SRC 
+docker exec -it daemonized_container /bin/bash
+#+END_SRC
+
+*** Automatic restart
+We can automatically restart a container whenever the container fails/stops because of some error
+#+BEGIN_SRC 
+docker run --restart=always --name daemonized_container -d ubuntu /bin/sh "while true; do echo hello world; sleep 1; done"
+#+END_SRC
+This command will restart the container whenever the process fails and container stops
+
+*** Inspecting a container
+We can find more information about a container with command 'docker inspect'
+#+BEGIN_SRC 
+docker inspect daemonized_container
+#+END_SRC
+This will throw out the info about daemonized_container
+We can extract a particular information with '--format' flag
+#+BEGIN_SRC 
+docker inspect --format '{{ .NetworkSettings.IPAddress }}' daemonized_container
+#+END_SRC
+This will give us the IP Address of container
+#+BEGIN_SRC 
+172.17.0.2
+#+END_SRC
+
+*** Deleting container
+We can delete the container using 'docker rm' command
+#+BEGIN_SRC 
+docker rm 6731d75c6c2e
+#+END_SRC
+There is no direct way to delete all containers, but following is the hack to do it
+#+BEGIN_SRC 
+docker rm `docker ps -a -q`
+#+END_SRC
+
