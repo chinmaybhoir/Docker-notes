@@ -1,4 +1,4 @@
-#+TITLE: Notes On Containerization with Docker - Chapter I
+#+TITLE: Notes on Containerization with Docker
 
 These notes are taken from the book "The Docker Book  Containerization is the new virtualization" by James Turnbull
 
