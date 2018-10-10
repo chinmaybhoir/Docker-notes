@@ -11,3 +11,48 @@
 * Docker repositories
 - Docker repository is similar to git repository. It contains number of images, metadata, and layers
 - We use the command `docker pull` to pull the image from Docker hub
+- We identify each image in repository by its '*tag*'
+- We can pull a particular image from repository by adding a tag after a semicolon after the image name. For example, to get Ubuntu 12.04 image, we can use the command
+#+BEGIN_SRC 
+docker pull ubuntu:12.04
+#+END_SRC
+
+* Building/creating our own image
+We can create/build our own docker image in two ways
+1. Using '*docker commit*' command
+2. Using '*docker build*' with Dockerfile
+
+** Via docker commit
+  The command 'docker commit' creates new image from container changes. For example, suppose we pull some image (ubuntu, lets say) and install some software on it (by executing commands on terminal /inside/ container), and if we want to save these changes to a new image, we can use 'docker commit'
+The Syntax of docker commit command is 
+#+BEGIN_SRC 
+docker commit [OPTIONS] container [REPOSITORY:TAG]
+#+END_SRC
+
+** Via docker build
+  We can create our own image using a DSL (domain specific language) file called Dockerfile. Dockerfile is nothing but set of instructions for image construction.
+Following is the sample Dockerfile
+#+BEGIN_SRC 
+# Version: 0.0.1
+FROM ubuntu:16.04
+MAINTAINER Chinmay Bhoir "chinmay.s.bhoir@gmail.com"
+RUN apt-get update && apt-get install -y nginx && apt-get install -y vim
+EXPOSE 80
+#+END_SRC
+First line is a comment (comments start from #).
+Second line is denoting the base image. FROM directive must be the first instruction in Dockerfile. Whatever we do from henceforth will be built upon the base image
+Third line (with directive/instruction MAINTAINER) denotes the author of this image along with email id
+Fourth line denotes the actual commands to be performed inside the container. As can be seen, we are updating the index, then installing nginx and vim.
+Fifth line is exposing the port 80 to outside network. 
+Once we save this as 'Dockerfile' in some specific folder, the rest of the contents of that folder are taken as context by docker. This is useful for application development using docker.
+For now, the folder will be empty (since we just want to see the nginx server up and running in docker container)
+Inside the folder, run following command
+#+BEGIN_SRC 
+docker build -t "<repository_name:tag_name>" .
+#+END_SRC
+Where repository_name is the name of repository you want this image to be associated with, and tag_name is, well, name of the tag (e.g. v1, v0.0.1 etc.)
+This command 'builds' the docker image. Once done (given there are no errors in Dockerfile) you can see the image in 'docker images' list.
+Notice the '.' at the end. It denotes the path of Dockerfile. Since we're in the root of directory where Dockerfile is saved, it works. You can give a different path wherever the Dockerfile is present.
+You can look through 'docker build --help' for more details.
+
+
