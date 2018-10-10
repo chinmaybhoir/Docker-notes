@@ -65,4 +65,15 @@ Notice the '.' at the end. It denotes the path of Dockerfile. Since we're in the
 
 You can look through 'docker build --help' for more details.
 
-
+** Some Dockerfile instructions
+1. *CMD* : CMD is similar to RUN, the only difference being CMD is executed while container is /running/ and not while image is being built.
+2. *ENTRYPOINT* : Any arguments we give to 'docker run' will be passed to command specified in ENTRYPOINT
+3. *WORKDIR* : WORKDIR sets the working directory for RUN, ENTRYPOINT, and CMD
+4. *ENV* : Used to set environmental variables during image build process
+5. *USER* : Specifies the user that image should be run as
+6. *VOLUME* : Adds a volume to any container created from image
+7. *ADD* : Adds files/directories from build environment to image
+8. *COPY* : Copy is similar to ADD except it does not have extraction or decompression functionality
+9. *LABEL* : Adds metadata to image
+10. *STOPSIGNAL* : Sets the system call signal that will be sent to container when you tell it to stop
+11. *ARG* : Defines the variables that can be passed at build-time via 'docker build' command
