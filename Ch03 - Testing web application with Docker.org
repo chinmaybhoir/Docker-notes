@@ -4,7 +4,7 @@ Let's see how we tie everything together for Docker to run a web application. We
 
 We will use some nginx configuration files and store them in a directory called nginx-files (temporarily. Ideally these files will be in nginx configuration directory)
 Following is our sample Dockerfile
-#+BEGIN_SRC 
+#+BEGIN_SRC Dockerfile
 FROM ubuntu:16.04
 MAINTAINER Chinmay Bhoir "chinmay.s.bhoir@gmail.com"
 ENV REFRESHED_AT 2018-10-11
@@ -21,7 +21,7 @@ This Dockerfile:
 - Exposes port 80 on the image
 
 Here is the sample nginx/global.conf file
-#+BEGIN_SRC 
+#+BEGIN_SRC conf
 server {
     listen         0.0.0.0:80;
     server_name    _;
@@ -35,7 +35,7 @@ server {
 #+END_SRC
 
 Now, in order to let nginx work in our container in non-demonized mode, we copied nginx/nginx.conf to container. Following are the contents of nginx.conf
-#+BEGIN_SRC 
+#+BEGIN_SRC conf
 user www-data;
 worker_processes 4;
 pid /run/nginx.pid;
@@ -69,7 +69,7 @@ docker build -t "chinmaybhoir94/nginx" .
 This will build the image for us. 
 Once that is done, we will host an HTML page inside container.
 Following is the sample html file called 'index.html'. We will save this file in a directory 'website'.
-#+BEGIN_SRC 
+#+BEGIN_SRC html
 <head>
 <title> Test Website </title>
 </head>
@@ -94,7 +94,7 @@ Notice the PORTS column. The website is hosted on port 32772 on host computer. G
 
 Now, what if we want to make some changes to our index page? Let's try that.
 We will change index.html from 
-#+BEGIN_SRC 
+#+BEGIN_SRC html
 <head>
 <title> Test Website </title>
 </head>
@@ -105,7 +105,7 @@ We will change index.html from
 #+END_SRC
 
 to
-#+BEGIN_SRC 
+#+BEGIN_SRC html
 <head>
 <title> Test Website </title>
 </head>

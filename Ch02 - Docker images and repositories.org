@@ -32,7 +32,7 @@ docker commit [OPTIONS] container [REPOSITORY:TAG]
 ** Via docker build
   We can create our own image using a DSL (domain specific language) file called Dockerfile. Dockerfile is nothing but set of instructions for image construction.
 Following is the sample Dockerfile
-#+BEGIN_SRC 
+#+BEGIN_SRC Dockerfile
 # Version: 0.0.1
 FROM ubuntu:16.04
 MAINTAINER Chinmay Bhoir "chinmay.s.bhoir@gmail.com"
