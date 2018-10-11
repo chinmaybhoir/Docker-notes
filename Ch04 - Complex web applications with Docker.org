@@ -1,0 +1,110 @@
+#+TITLE: Complex web applications with Docker
+
+You already saw in previous chapter how to dockerize a simple web app (just a simple index.html file hosting). However, most web applications tend to be a bit more complex than that. 
+
+I am most familiar with Python-Flask web applications, and so I will try to demonstrate here how to host a Flask application on docker. 
+
+For those who are not familiar with flask, its a [[http://flask.pocoo.org/][microframework]] for Python to design web applications.
+
+Here is a simplest program in Python that utilises flask to serve content on web (save it as 'server_flask.py):
+#+BEGIN_SRC 
+from flask import Flask
+
+application = Flask(__name__)
+
+@application.route("/", methods=['GET'])
+def index():
+    return "<h1> Hello World! </h1>"
+
+if __name__ == "__main__":
+    application.run(host="0.0.0.0", port=5000)
+#+END_SRC
+
+As you can see above, we are routing the URL '/' to function 'index()', and returning a string that can be rendered as HTML. If you just run this (without docker) with 
+#+BEGIN_SRC 
+python server_flask.py
+#+END_SRC
+you will see that flask server is successfully started and accepting connections on 'http://localhost:5000'. 
+
+However, you will also see following message 
+#+BEGIN_SRC 
+ WARNING: Do not use the development server in a production environment.
+#+END_SRC
+
+And that is because server provided by Flask is not production ready. It should be used only for development purposes. It only accepts one request at a time. We need a wrapper around this server that we can actually use in production.
+
+Enter [[https://uwsgi-docs.readthedocs.io/en/latest/][uWSGI]]. uWSGI is a gateway interface (see [[https://en.wikipedia.org/wiki/Web_Server_Gateway_Interface][WSGI]]) that can be used in production. uWSGI can be run either through command line or through a configuration init file. We will prefer an init file since it can be reproduced much easily than command.
+Following is our uWSGI init file. Save it as uwsgi_ini.conf
+#+BEGIN_SRC 
+[uwsgi]
+chdir = /myflaskapp/
+plugins = python3
+protocol = http
+#socket = /tmp/flask_server.sock
+http-socket = 0.0.0.0:5000
+wsgi-file = server_flask.py
+callable = application
+master = true
+processes = 4
+threads = 4
+
+workers = 4
+#+END_SRC
+
+You can search for what each of these parameters mean (and more) in documentation. For now, what matter to us are 
+- *chdir* : changing directory to /distrender, which will be the directory /inside/ container where our application code will rest
+- *http-socket* : socket/address where requests will be received
+- *wsgi-file* : name of server file
+- *callable* : context of flask server (see in server_flask.py, we have assigned 'application = Flask()')
+
+Now we just need to take care of python dependencies. We will use requirements.txt file for that (see [[https://pip.pypa.io/en/stable/user_guide/#requirements-files][requirement-files]])
+#+BEGIN_SRC 
+flask
+#+END_SRC
+
+Since our application is not much complicated, we just need one dependency.
+Now that we are done with our code, let's write a Dockerfile for our app
+#+BEGIN_SRC 
+FROM ubuntu:16.04
+MAINTAINER Chinmay Bhoir "chinmay.s.bhoir@gmail.com"
+RUN apt-get -y update && \
+    apt-get -y install && \
+    apt-get -y install uwsgi && \
+    apt-get -y install python3-dev && \
+    apt-get -y install python3-pip && \
+    apt-get -y install uwsgi-plugin-python3 && \
+    apt-get -y install uwsgi-plugin-python
+
+ADD ./ /myflaskapp/
+
+RUN pip3 install --upgrade pip
+RUN pip3 install --trusted-host pypi.python.org -r /myflaskapp/requirements.txt
+
+EXPOSE 5000
+WORKDIR /myflaskapp/
+CMD uwsgi --ini uwsgi_ini.conf
+#+END_SRC
+
+Recall the Dockerfile instructions and everything will make sense.
+- First we use ubuntu:16.04 as base image
+- I gave my credentials as a maintainer
+- Install all required software packages
+- Copy all our files (server_flask.py, uwsgi_ini.conf, and requirements.txt) to container inside a folder called '/myflaskapp'
+- Install pip (python) dependencies
+- Expose the port where our app will be hosted in container
+- Change work directory to 'myflaskapp' where our code files reside
+- Execute command 'uwsgi --ini uwsgi_ini.conf' which finally starts a uWSGI server in our container
+
+Build the docker image with
+#+BEGIN_SRC 
+docker build -t "<repository:tag>" .
+#+END_SRC
+
+Once the docker image is built successfully, run the image with
+#+BEGIN_SRC 
+docker run -p 5000 --name uwsgi-server <image_name>
+#+END_SRC
+If everything goes correct, your app is up and running inside a container.
+Find what port docker has mapped with 5000 with 'docker container ls', and open 'http://localhost:<port>' in browser. 
+
+
