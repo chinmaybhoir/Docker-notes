@@ -1,0 +1,117 @@
+#+TITLE: Testing web application with Docker
+
+Let's see how we tie everything together for Docker to run a web application. We can use nginx configuration to run our server in container.
+
+We will use some nginx configuration files and store them in a directory called nginx-files (temporarily. Ideally these files will be in nginx configuration directory)
+Following is our sample Dockerfile
+#+BEGIN_SRC 
+FROM ubuntu:16.04
+MAINTAINER Chinmay Bhoir "chinmay.s.bhoir@gmail.com"
+ENV REFRESHED_AT 2018-10-11
+RUN apt-get -yqq update && apt-get -yqq install nginx
+RUN mkdir -p /var/www/html/website
+ADD nginx-files/global.conf /etc/nginx/conf.d/
+ADD nginx-files/nginx.conf /etc/nginx/nginx.conf
+EXPOSE 80
+#+END_SRC
+This Dockerfile:
+- Installs nginx
+- Created directory /var/www/html/website in container
+- Adds the nginx configuration from local files nginx/global.conf and nginx/nginx.conf
+- Exposes port 80 on the image
+
+Here is the sample nginx/global.conf file
+#+BEGIN_SRC 
+server {
+    listen         0.0.0.0:80;
+    server_name    _;
+
+    root           /var/www/html/website;
+    index          index.html index.htm;
+
+    access_log     /var/log/nginx/default_access.log;
+    error_log      /var/log/nginx/default_error.log;
+}
+#+END_SRC
+
+Now, in order to let nginx work in our container in non-demonized mode, we copied nginx/nginx.conf to container. Following are the contents of nginx.conf
+#+BEGIN_SRC 
+user www-data;
+worker_processes 4;
+pid /run/nginx.pid;
+daemon off;
+
+events { }
+
+http {
+    sendfile on;
+    tcp_nopush on;
+    tcp_nodelay on;
+    keepalive_timeout 65;
+    types_hash_max_size 2048;
+    include /etc/nginx/mime.types;
+    default_type application/octet-stream;
+    access_log /var/log/nginx/access.log;
+    error_log /var/log/nginx/error.log;
+    gzip on;
+    gzip_disable "msie6";
+    include /etc/nginx/conf.d/*.conf;
+}
+#+END_SRC
+
+Note that we have mentioned 'daemon off;' in configuration file. Nginx by default runs in background, but we want it to run in foreground inside the container.
+
+So once everything is set, we are ready to build the docker image
+#+BEGIN_SRC 
+docker build -t "chinmaybhoir94/nginx" .
+#+END_SRC
+
+This will build the image for us. 
+Once that is done, we will host an HTML page inside container.
+Following is the sample html file called 'index.html'. We will save this file in a directory 'website'.
+#+BEGIN_SRC 
+<head>
+<title> Test Website </title>
+</head>
+
+<body>
+<h1> This is a test website </h1>
+</body>
+#+END_SRC
+
+Now we need to host this file inside container. We will use the option '-v' to do that (see 'docker run --help' for details and more options)
+#+BEGIN_SRC 
+docker run -p 80 --name website -v <YOUR_ABSOLUTE_PATH>/website:/var/www/html/website chinmaybhoir94/nginx nginx
+#+END_SRC
+
+As we can see, we are mapping port 80 to a random port on host, we are naming our container 'website', and we are mapping volume for hosting our html page. Finally we are running the command nginx.
+Once this is done, you can see where your container is hosting your website using 'docker container ls'. It shows output similar to 
+#+BEGIN_SRC 
+CONTAINER ID        IMAGE                  COMMAND             CREATED             STATUS              PORTS                   NAMES
+680dd34c5249        chinmaybhoir94/nginx   "nginx"             8 minutes ago       Up 8 minutes        0.0.0.0:32772->80/tcp   website
+#+END_SRC
+Notice the PORTS column. The website is hosted on port 32772 on host computer. Go to http://localhost:32772 and you should see the html page rendered!
+
+Now, what if we want to make some changes to our index page? Let's try that.
+We will change index.html from 
+#+BEGIN_SRC 
+<head>
+<title> Test Website </title>
+</head>
+
+<body>
+<h1> This is a test website </h1>
+</body>
+#+END_SRC
+
+to
+#+BEGIN_SRC 
+<head>
+<title> Test Website </title>
+</head>
+
+<body>
+<h1> This is a test website UPDATED </h1>
+</body>
+#+END_SRC
+Save the changes and refresh the page in browser. Changes should be reflected in browser.
