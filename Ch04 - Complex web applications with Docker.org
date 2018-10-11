@@ -7,7 +7,7 @@ I am most familiar with Python-Flask web applications, and so I will try to demo
 For those who are not familiar with flask, its a [[http://flask.pocoo.org/][microframework]] for Python to design web applications.
 
 Here is a simplest program in Python that utilises flask to serve content on web (save it as 'server_flask.py):
-#+BEGIN_SRC 
+#+BEGIN_SRC python
 from flask import Flask
 
 application = Flask(__name__)
@@ -35,7 +35,7 @@ And that is because server provided by Flask is not production ready. It should 
 
 Enter [[https://uwsgi-docs.readthedocs.io/en/latest/][uWSGI]]. uWSGI is a gateway interface (see [[https://en.wikipedia.org/wiki/Web_Server_Gateway_Interface][WSGI]]) that can be used in production. uWSGI can be run either through command line or through a configuration init file. We will prefer an init file since it can be reproduced much easily than command.
 Following is our uWSGI init file. Save it as uwsgi_ini.conf
-#+BEGIN_SRC 
+#+BEGIN_SRC ini
 [uwsgi]
 chdir = /myflaskapp/
 plugins = python3
@@ -64,7 +64,7 @@ flask
 
 Since our application is not much complicated, we just need one dependency.
 Now that we are done with our code, let's write a Dockerfile for our app
-#+BEGIN_SRC 
+#+BEGIN_SRC Dockerfile
 FROM ubuntu:16.04
 MAINTAINER Chinmay Bhoir "chinmay.s.bhoir@gmail.com"
 RUN apt-get -y update && \
