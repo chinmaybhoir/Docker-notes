@@ -52,7 +52,7 @@ workers = 4
 #+END_SRC
 
 You can search for what each of these parameters mean (and more) in documentation. For now, what matter to us are 
-- *chdir* : changing directory to /distrender, which will be the directory /inside/ container where our application code will rest
+- *chdir* : changing directory to //myflaskapp/, which will be the directory /inside/ container where our application code will rest
 - *http-socket* : socket/address where requests will be received
 - *wsgi-file* : name of server file
 - *callable* : context of flask server (see in server_flask.py, we have assigned 'application = Flask()')
